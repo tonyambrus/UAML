@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<window width="1" height="2">
+  <panel>
+    <scrollView>
+      <slider/>
+      <button />
+      <checkbox />
+      <textfield />
+      <image />
+      <text />
+    </scrollView>
+  </panel>
+</window>

@@ -1,0 +1,18 @@
+<Window x:Class="MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Click="Button_Click_Routed">
+  <Panel X="10" Y="10" Width="200" Height="200">
+    <Text Value="Text goes here:" />
+    <Button Text="Hello" X="100" Y="0" />
+    <Button Text="Click me!" Click="Button_Click" X="100" Y="30" />
+    
+    <ScrollView X="0" Y="225" Width="200" Height="200">
+      <Button Text="Item 1" Y="280" Width="180"/>
+      <Button Text="Item 2" Y="260" Width="180"/>
+      <Button Text="Item 3" Y="240" Width="180"/>
+    </ScrollView>
+  </Panel>
+</Window>
