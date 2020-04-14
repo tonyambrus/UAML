@@ -1,28 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Uaml.Internal.Events;
 using Uaml.UX;
 
 namespace Uaml.Events
 {
     public static class EventManager
     {
-        private static Dictionary<string, RoutedEvent> routedEvents = new Dictionary<string, RoutedEvent>(StringComparer.OrdinalIgnoreCase);
+        private static Dictionary<(string, Type), RoutedEvent> allEvents = new Dictionary<(string, Type), RoutedEvent>();
+        private static Dictionary<Type, RoutedEventSet> typeEvents = new Dictionary<Type, RoutedEventSet>();
+        private static Dictionary<string, Type> typeOwners = new Dictionary<string, Type>();
 
         public static RoutedEvent RegisterRoutedEvent(string name, RoutingStrategy strategy, Type handlerType, Type ownerType)
         {
             var routedEvent = new RoutedEvent(name, strategy, handlerType, ownerType);
-            routedEvents[name] = routedEvent; // TODO: what if name is reused?
+
+            if (!allEvents.ContainsKey((name, ownerType)))
+            {
+                allEvents[(name, ownerType)] = routedEvent; // TODO: what if name is reused?
+            }
+            else
+            {
+                throw new Exception($"Routed Event ({name}, {ownerType}) already exists");
+            }
+
+            if (!typeEvents.TryGetValue(ownerType, out var typeEvent))
+            {
+                typeEvent = new RoutedEventSet(ownerType);
+                typeEvents[ownerType] = typeEvent;
+            }
+
+            typeEvent[name] = routedEvent;
+
+            if (!typeOwners.TryGetValue(ownerType.Name, out var type))
+            {
+                typeOwners[ownerType.Name] = ownerType;
+            }
+            else
+            {
+                throw new Exception($"Type {ownerType.FullName} conflicts with {type.FullName}");
+            }
+
             return routedEvent;
         }
 
-        internal static bool TryGetRoutedEvent(string name, out RoutedEvent routedEvent) => routedEvents.TryGetValue(name, out routedEvent);
-        internal static bool HasRoutedEvent(string name) => routedEvents.ContainsKey(name);
-
-        internal static void RaiseEvent(ElementBase source, RoutedEvent routedEvent)
+        internal static void RaiseEvent(FrameworkElement source, RoutedEvent routedEvent)
         {
             var args = new RoutedEventArgs(routedEvent, source);
-            var chain = GetParentChain(source);
+            var chain = source.ElementChain;
 
             if (routedEvent.RoutingStrategy == RoutingStrategy.Direct)
             {
@@ -44,15 +70,25 @@ namespace Uaml.Events
             }
         }
 
-        private static IEnumerable<ElementBase> GetParentChain(ElementBase element)
-        {
-            yield return element;
+        internal static RoutedEventSet GetDeclaredEvents(Type type) => typeEvents.TryGetValue(type, out var events) ? events : null;
 
-            while (element.parent)
+        internal static bool HasRoutedEvent(string name, Type elementType, IEnumerable<string> namespaces)
+        {
+            return TryGetRoutedEvent(name, elementType, namespaces, out var _);
+        }
+
+        internal static bool TryGetRoutedEvent(string name, Type elementType, IEnumerable<string> namespaces, out RoutedEvent routedEvent)
+        {
+            if (Util.TryParseQualifiedName(name, elementType, namespaces, out var propertyName, out var ownerType))
             {
-                element = element.parent;
-                yield return element;
+                if (allEvents.TryGetValue((propertyName, ownerType), out routedEvent))
+                {
+                    return true;
+                }
             }
+
+            routedEvent = default;
+            return false;
         }
     }
 }

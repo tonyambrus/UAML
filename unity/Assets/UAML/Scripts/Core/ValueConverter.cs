@@ -6,9 +6,9 @@ namespace Uaml.Core
 {
     public static class ValueConverter
     {
-        public static bool TryParse<T>(string inValue, out T result)
+        public static bool TryConvert<T>(string value, out T result)
         {
-            if (TryParse(inValue, typeof(T), out var o))
+            if (TryConvert(value, typeof(T), out var o))
             {
                 result = (T)o;
                 return true;
@@ -18,12 +18,12 @@ namespace Uaml.Core
             return false;
         }
 
-        public static bool TryParse(string inValue, Type t, out object result)
+        public static bool TryConvert(string value, Type targetType, out object result)
         {
-            var converter = TypeDescriptor.GetConverter(t);
+            var converter = TypeDescriptor.GetConverter(targetType);
             try
             {
-                result = converter.ConvertFromString(null, CultureInfo.InvariantCulture, inValue);
+                result = converter.ConvertFromString(null, CultureInfo.InvariantCulture, value);
                 return true;
             }
             catch
@@ -31,6 +31,13 @@ namespace Uaml.Core
                 result = null;
                 return false;
             }
+        }
+
+        public static object Convert(object value, Type targetType) => Convert(value, targetType, CultureInfo.InvariantCulture);
+        public static object Convert(object value, Type targetType, CultureInfo culture)
+        {
+            var converter = TypeDescriptor.GetConverter(targetType);
+            return converter.ConvertFrom(null, culture, value);
         }
     }
 }

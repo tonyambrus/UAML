@@ -6,12 +6,10 @@ namespace Uaml.UX
 {
     public class Button : Element
     {
+        public static readonly DependencyProperty ColorProperty = DependencyProperty.Register("Color", typeof(Color), typeof(Button));
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(Button));
+
         public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent("Click", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(Button));
-
-        // TODO: automatically generate/reflect from schema to do this
-
-        private UnityEngine.UI.Button _Button => instance.GetPath<UnityEngine.UI.Button>("Button");
-        private UnityEngine.UI.Text _Text => instance.GetPath<UnityEngine.UI.Text>("Button/Text");
 
         public Color Color
         {
@@ -25,13 +23,18 @@ namespace Uaml.UX
             set => _Text.SetValue(t => t.text = value);
         }
 
-        public void OnEnable() => BindEvent(_Button.onClick, ClickEvent);
-        public void OnDisable() => UnbindEvent(_Button.onClick, ClickEvent);
-
         public event RoutedEventHandler Click
         {
             add => AddHandler(ClickEvent, value);
             remove => RemoveHandler(ClickEvent, value);
         }
+
+        #region Internal
+        // TODO: automatically generate/reflect from schema to do this
+        private UnityEngine.UI.Button _Button => instance.GetPath<UnityEngine.UI.Button>("Button");
+        private UnityEngine.UI.Text _Text => instance.GetPath<UnityEngine.UI.Text>("Button/Text");
+        public void OnEnable() => BindEvent(_Button.onClick, ClickEvent);
+        public void OnDisable() => UnbindEvent(_Button.onClick, ClickEvent);
+        #endregion Internal
     }
 }

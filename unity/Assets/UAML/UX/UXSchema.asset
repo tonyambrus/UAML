@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3fd901b3028a2842865efd3b8573e4f, type: 3}
+  m_Name: UXSchema
+  m_EditorClassIdentifier: 
+  namespaces: Uaml.UX
+  elementClass: Uaml.UX.Element
+  schema:
+  - {fileID: 11400000, guid: 708683581b9f027418564ca5017de81c, type: 2}
+  - {fileID: 11400000, guid: 68f642ee355870b4ea1666af38bd759b, type: 2}
+  - {fileID: 11400000, guid: 3478c0a7d1729b44dbfcd31d97c50652, type: 2}
+  - {fileID: 11400000, guid: 33a6b6850fb85064ca1652b293f7261f, type: 2}
+  - {fileID: 11400000, guid: 4a17b97d3a76a614bb4c95abd8545ab6, type: 2}
+  - {fileID: 11400000, guid: eee4c87b5ace1ac45925321e83d240c3, type: 2}
+  - {fileID: 11400000, guid: e68c292b79b846e48af62be98512f1a2, type: 2}
+  - {fileID: 11400000, guid: ca60cf43dba24e14fa5b28d7b69895a8, type: 2}
+  - {fileID: 11400000, guid: 525157b9cef62de45b169eb48a8b4770, type: 2}

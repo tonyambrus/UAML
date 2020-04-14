@@ -1,15 +1,16 @@
 ﻿using System;
+using Uaml.Internal.Events;
 
 namespace Uaml.Internal.Reflection
 {
-    public class ElementType
+    internal class ElementType
     {
         public Type type;
         public ElementType baseClass;
-        public PropertySet selfProps;
-        public PropertySet hierarchyProps;
+        public DependencyPropertySet selfProps;
+        public DependencyPropertySet hierarchyProps;
 
-        public EventSet selfEvents;
-        public EventSet hierarchyEvents;
+        public RoutedEventSet selfEvents;
+        public RoutedEventSet hierarchyEvents;
     }
 }

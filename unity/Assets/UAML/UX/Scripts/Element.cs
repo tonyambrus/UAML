@@ -2,8 +2,17 @@
 
 namespace Uaml.UX
 {
-    public class Element : ElementBase
+    public class Element : FrameworkElement
     {
+        public static readonly DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(float), typeof(Element));
+        public static readonly DependencyProperty HeightProperty = DependencyProperty.Register("Height", typeof(float), typeof(Element));
+        public static readonly DependencyProperty DepthProperty = DependencyProperty.Register("Depth", typeof(float), typeof(Element));
+        public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(float), typeof(Element));
+        public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(float), typeof(Element));
+        public static readonly DependencyProperty ZProperty = DependencyProperty.Register("Z", typeof(float), typeof(Element));
+        public static readonly DependencyProperty PositionProperty = DependencyProperty.Register("Position", typeof(Vector3), typeof(Element));
+        public static readonly DependencyProperty ScaleProperty = DependencyProperty.Register("Scale", typeof(Vector3), typeof(Element));
+
         public float Width
         {
             get => RectTransform.sizeDelta.x;

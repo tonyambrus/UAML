@@ -8,6 +8,7 @@ namespace Uaml.Core
     [CreateAssetMenu(fileName = "Schema", menuName = "UAML/Create Schema", order = 1)]
     public class Schema : ScriptableObject
     {
+        public string namespaces;
         public string elementClass;
         public List<Element> schema = new List<Element>();
         private Dictionary<string, Element> dictionary = null;
@@ -41,7 +42,7 @@ namespace Uaml.Core
 
         internal Transform GetContainerForInstance(string name, Component component)
         {
-            if ((component is ElementBase e) && e.IsRoot)
+            if ((component is FrameworkElement e) && e.IsRoot)
             {
                 return component.transform;
             }

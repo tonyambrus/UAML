@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Uaml.Events
 {
@@ -12,6 +13,30 @@ namespace Uaml.Events
             RoutingStrategy = strategy;
             HandlerType = handlerType;
             OwnerType = ownerType;
+        }
+
+        private bool initialized;
+        private EventInfo eventInfo;
+
+        internal EventInfo EventInfo
+        {
+            get
+            {
+                InitializeAccessors();
+                return eventInfo;
+            }
+        }
+
+        private void InitializeAccessors()
+        {
+            if (initialized)
+            {
+                return;
+            }
+
+            initialized = true;
+
+            eventInfo = OwnerType.GetEvent(Name);
         }
 
         //

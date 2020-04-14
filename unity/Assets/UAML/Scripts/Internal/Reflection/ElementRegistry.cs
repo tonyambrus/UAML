@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Uaml.Events;
+using Uaml.Internal.Events;
 using Uaml.UX;
 
 namespace Uaml.Internal.Reflection
@@ -10,30 +12,27 @@ namespace Uaml.Internal.Reflection
     {
         private static Dictionary<Type, ElementType> registry = new Dictionary<Type, ElementType>();
 
-        private static bool DescendsFromElement(Type type) => typeof(ElementBase).IsAssignableFrom(type);
-
-        public static ElementType GetElementType(Type type)
+       
+        internal static ElementType GetElementType(Type type)
         {
-            if (!DescendsFromElement(type))
+            if (!Util.IsFrameworkElementType(type))
             {
-                return null;
+                throw new Exception($"Type {type} is not a FrameworkElement type");
             }
 
             if (!registry.TryGetValue(type, out var info))
             {
-                var selfFlags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
-
                 info = new ElementType
                 {
                     type = type,
 
-                    hierarchyProps = ToSet(type.GetProperties()),
-                    selfProps = ToSet(type.GetProperties(selfFlags)),
+                    hierarchyProps = FindProperties(type, declaredOnly: false),
+                    selfProps = FindProperties(type, declaredOnly: true),
 
-                    hierarchyEvents = ToSet(type.GetEvents()),
-                    selfEvents = ToSet(type.GetEvents(selfFlags)),
+                    hierarchyEvents = FindEvents(type, declaredOnly: false),
+                    selfEvents = FindEvents(type, declaredOnly: true),
 
-                    baseClass = type == typeof(ElementBase) ? null : GetElementType(type.BaseType)
+                    baseClass = type == typeof(FrameworkElement) ? null : GetElementType(type.BaseType)
                 };
 
                 registry[type] = info;
@@ -45,28 +44,33 @@ namespace Uaml.Internal.Reflection
         private static Dictionary<string, T> ToDict<T>(IEnumerable<T> props) where T : MemberInfo
             => props.ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
 
-        private static PropertySet ToSet(PropertyInfo[] props)
+        private static DependencyPropertySet FindProperties(Type type, bool declaredOnly)
         {
-            var dict = props
-                .Where(p => typeof(ElementBase).IsAssignableFrom(p.DeclaringType))
-                .Where(p => p.CanRead && p.CanWrite)
-                .ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+            var dict = Util
+                .GetTypeChain(type, declaredOnly)
+                .Select(t => DependencyProperty.GetDeclaredProperties(t))
+                .Where(p => p != null)
+                .SelectMany(p => p)
+                .ToDictionary(p => p.Key, p => p.Value, StringComparer.OrdinalIgnoreCase);
 
-            return new PropertySet(dict);
+            return new DependencyPropertySet(type, dict);
         }
 
-        private static EventSet ToSet(EventInfo[] events)
+        private static RoutedEventSet FindEvents(Type type, bool declaredOnly)
         {
-            var dict = events
-                .Where(p => typeof(ElementBase).IsAssignableFrom(p.DeclaringType))
-                .ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+            var dict = Util
+                .GetTypeChain(type, declaredOnly)
+                .Select(t => EventManager.GetDeclaredEvents(t))
+                .Where(p => p != null)
+                .SelectMany(p => p)
+                .ToDictionary(p => p.Key, p => p.Value, StringComparer.OrdinalIgnoreCase);
 
-            return new EventSet(dict);
+            return new RoutedEventSet(type, dict);
         }
 
-        public static PropertySet GetProperties(Type type) => GetElementType(type).hierarchyProps;
-        public static PropertySet GetDeclaredProperties(Type type) => GetElementType(type).selfProps;
-        public static EventSet GetEvents(Type type) => GetElementType(type).hierarchyEvents;
-        public static EventSet GetDeclaredEvents(Type type) => GetElementType(type).selfEvents;
+        internal static DependencyPropertySet GetProperties(Type type) => GetElementType(type).hierarchyProps;
+        internal static DependencyPropertySet GetDeclaredProperties(Type type) => GetElementType(type).selfProps;
+        internal static RoutedEventSet GetEvents(Type type) => GetElementType(type).hierarchyEvents;
+        internal static RoutedEventSet GetDeclaredEvents(Type type) => GetElementType(type).selfEvents;
     }
 }

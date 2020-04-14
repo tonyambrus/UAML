@@ -49,7 +49,8 @@ namespace Uaml.Core
 
         public static C GetPath<C>(this Component comp, string path) where C : Component
         {
-            return comp.transform.Find(path)?.GetComponent<C>();
+            var t = comp.transform.Find(path);
+            return t ? t.GetComponent<C>() : null;
         }
 
         public static T GetValue<T>(this Component comp, string field)

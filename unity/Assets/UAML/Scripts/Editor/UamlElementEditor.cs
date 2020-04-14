@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Uaml.Editor
 {
-    [CustomEditor(typeof(ElementBase), editorForChildClasses: true)]
+    [CustomEditor(typeof(FrameworkElement), editorForChildClasses: true)]
     public class UamlElementEditor : UnityEditor.Editor
     {
         private ElementType elemInfo;
@@ -46,7 +46,7 @@ namespace Uaml.Editor
                 DrawEvents();
                 DrawProperties();
 
-                var element = (ElementBase)target;
+                var element = (FrameworkElement)target;
                 element.transform.position = element.instance.transform.position;
                 element.transform.rotation = element.instance.transform.rotation;
                 element.transform.localScale = element.instance.transform.localScale;
@@ -67,7 +67,7 @@ namespace Uaml.Editor
         {
             for (var e = elemInfo; e != null; e = e.baseClass)
             {
-                if (e.selfProps.Count == 0)
+                if (e == null || e.selfProps.Count == 0)
                 {
                     continue;
                 }
@@ -75,8 +75,8 @@ namespace Uaml.Editor
                 var groupName = e.type.Name;
                 var show = showGroup.TryGetValue(groupName, out var s) ? s : true;
 
-                show = EditorGUILayout.Foldout(show, groupName);
-                if (show)
+                var newShow = EditorGUILayout.Foldout(show, groupName);
+                if (newShow)
                 {
                     foreach (var pair in e.selfProps)
                     {
@@ -90,7 +90,10 @@ namespace Uaml.Editor
                     }
                 }
 
-                showGroup[groupName] = show;
+                if (show != newShow)
+                {
+                    showGroup[groupName] = newShow;
+                }
             }
         }
 
