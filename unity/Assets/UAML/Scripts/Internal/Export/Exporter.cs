@@ -33,7 +33,7 @@ namespace Uaml.Internal
 
         private static void WriteElement(FrameworkElement element, XmlWriter writer)
         {
-            writer.WriteStartElement(element.Name);
+            writer.WriteStartElement(element.ElementName);
             foreach (var attrib in element.GetProperties())
             {
                 writer.WriteAttributeString(attrib.Key, attrib.Value);

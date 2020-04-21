@@ -9,7 +9,7 @@ namespace Uaml.UX
         public static readonly DependencyProperty ColorProperty = DependencyProperty.Register("Color", typeof(Color), typeof(Text));
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(string), typeof(Text));
 
-        private UnityEngine.UI.Text _Text => instance.GetPath<UnityEngine.UI.Text>("Text");
+        private UnityEngine.UI.Text _Text => Instance.GetPath<UnityEngine.UI.Text>("Text");
 
         public Color Color
         {

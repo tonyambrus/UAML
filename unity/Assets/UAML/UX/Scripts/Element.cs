@@ -63,7 +63,7 @@ namespace Uaml.UX
 
         private RectTransform RectTransform
         {
-            get => (RectTransform)instance.transform;
+            get => (RectTransform)Instance.transform;
         }
 
         private void SetPosition(int index, float value)

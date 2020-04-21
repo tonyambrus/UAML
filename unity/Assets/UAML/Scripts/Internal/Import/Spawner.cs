@@ -1,5 +1,4 @@
-﻿using System;
-using Uaml.Core;
+﻿using Uaml.Core;
 using Uaml.UX;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -23,14 +22,10 @@ namespace Uaml.Internal
 
         private static FrameworkElement CreateElement(GameObject go, Data.Element template, Scene scene, Schema schema)
         {
-            var prefab = schema.GetElementPrefab(template.name);
-            var instance = Instantiate(prefab, scene);
-
             var element = (FrameworkElement)go.AddComponent(template.type);
             element.gameObject.name = template.name;
-            element.Name = template.name;
+            element.name = template.name;
             element.schema = schema;
-            element.SetInstance(instance);
             element.SetNamespaces(template.namespaces);
             element.SetProperties(template.properties.Values);
             element.SetEvents(template.events.Values);
@@ -47,27 +42,6 @@ namespace Uaml.Internal
                 var go = new GameObject(childTemplate.name);
                 var element = CreateElement(go, childTemplate, scene, schema);
                 parent.AddChild(element);
-            }
-        }
-
-        private static Component Instantiate(Component prefab, Scene scene = default)
-        {
-            try
-            {
-                var instance = UnityEngine.Object.Instantiate(prefab);
-                if (instance.gameObject.scene != scene && scene != default)
-                {
-                    SceneManager.MoveGameObjectToScene(instance.gameObject, scene);
-
-                    // park under root
-                    instance.transform.SetParent(scene.GetRootGameObjects()[0].transform, false);
-                }
-
-                return instance;
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed to Instantiate prefab {prefab}", e);
             }
         }
     }

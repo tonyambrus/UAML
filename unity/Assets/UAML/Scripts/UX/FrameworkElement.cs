@@ -32,6 +32,15 @@ namespace Uaml.UX
 
         protected virtual void Awake() { }
 
+        protected virtual void OnDestroy()
+        {
+            if (instance)
+            {
+                Destroy(instance);
+                instance = null;
+            }
+        }
+
         #region Events
         internal EventHandlers eventHandlers = new EventHandlers();
 
@@ -88,18 +97,83 @@ namespace Uaml.UX
         #region Initialization
         [SerializeField] internal Component instance;
         [SerializeField] internal Transform container;
-        [SerializeField] internal string Name;
+        [SerializeField] internal new string name;
         [SerializeField] internal Schema schema;
 
-        public void SetInstance(Component instance)
-        {
-            this.instance = instance;
-            this.container = schema.GetContainerForInstance(Name, instance);
+        private bool instanceInitialized;
+        private bool containerInitialized;
 
-            if (IsRoot)
+        public string ElementName
+        {
+            get
             {
-                this.instance.transform.SetParent(transform, false);
-                this.instance.name = "_" + Name;
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    foreach (var t in Util.GetTypeChain(GetType()))
+                    {
+                        if (Schema.TryGetElement(t.Name, out var _))
+                        {
+                            name = t.Name;
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        throw new Exception($"Type {GetType()} not contained in schema");
+                    }
+                }
+
+                return name;
+            }
+        }
+
+
+        protected Schema Schema
+        {
+            get
+            {
+                if (!schema)
+                {
+                    schema = DefaultSchema.Schema;
+                }
+
+                return schema;
+            }
+        }
+
+        protected Component Instance
+        {
+            get
+            {
+                if (!instanceInitialized && (!instance && Schema))
+                {
+                    var prefab = Schema.GetElementPrefab(ElementName);
+                    instance = Spawn.Instantiate(prefab, gameObject.scene);
+
+                    if (IsRoot)
+                    {
+                        instance.transform.SetParent(transform, false);
+                        instance.name = "_" + ElementName;
+                    }
+
+                    instanceInitialized = true;
+                }
+
+                return instance;
+            }
+        }
+
+        protected Transform Container
+        {
+            get
+            {
+                if (!containerInitialized && (!container && Schema))
+                {
+                    container = Schema.GetContainerForInstance(ElementName, Instance);
+                    containerInitialized = true;
+                }
+
+                return container;
             }
         }
 
@@ -107,7 +181,7 @@ namespace Uaml.UX
         {
             if (!container)
             {
-                throw new Exception($"Element {Name} can't have children");
+                throw new Exception($"Element {ElementName} can't have children");
             }
 
             children.Add(element);
@@ -123,7 +197,7 @@ namespace Uaml.UX
                 // We must have a unique identifer for path for Unity AssetImportContext to use
                 // so just prepend a unique non-printable unicode character.
                 var id = elementPrefix + (children.Count - 1);
-                element.name = $"{char.ConvertFromUtf32(id)}{element.Name}";
+                element.name = $"{char.ConvertFromUtf32(id)}{element.ElementName}";
             }
 
             element.instance.name = $"_{element.name}";
@@ -177,7 +251,7 @@ namespace Uaml.UX
                 var rootMethodInfo = rootType.GetMethod(bindingName, flags);
                 if (rootMethodInfo == null)
                 {
-                    throw new Exception($"Failed to find method {rootMethodInfo} on {root.Name} when binding to event {eventName}");
+                    throw new Exception($"Failed to find method {rootMethodInfo} on {root.ElementName} when binding to event {eventName}");
                 }
 
                 var handler = (RoutedEventHandler)Delegate.CreateDelegate(typeof(RoutedEventHandler), root, rootMethodInfo);

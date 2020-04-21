@@ -31,8 +31,8 @@ namespace Uaml.UX
 
         #region Internal
         // TODO: automatically generate/reflect from schema to do this
-        private UnityEngine.UI.Button _Button => instance.GetPath<UnityEngine.UI.Button>("Button");
-        private UnityEngine.UI.Text _Text => instance.GetPath<UnityEngine.UI.Text>("Button/Text");
+        private UnityEngine.UI.Button _Button => Instance.GetPath<UnityEngine.UI.Button>("Button");
+        private UnityEngine.UI.Text _Text => Instance.GetPath<UnityEngine.UI.Text>("Button/Text");
         public void OnEnable() => BindEvent(_Button.onClick, ClickEvent);
         public void OnDisable() => UnbindEvent(_Button.onClick, ClickEvent);
         #endregion Internal
