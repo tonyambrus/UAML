@@ -4,61 +4,68 @@ namespace Uaml.UX
 {
     public class Element : FrameworkElement
     {
-        public static readonly DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(float), typeof(Element));
-        public static readonly DependencyProperty HeightProperty = DependencyProperty.Register("Height", typeof(float), typeof(Element));
-        public static readonly DependencyProperty DepthProperty = DependencyProperty.Register("Depth", typeof(float), typeof(Element));
-        public static readonly DependencyProperty XProperty = DependencyProperty.Register("X", typeof(float), typeof(Element));
-        public static readonly DependencyProperty YProperty = DependencyProperty.Register("Y", typeof(float), typeof(Element));
-        public static readonly DependencyProperty ZProperty = DependencyProperty.Register("Z", typeof(float), typeof(Element));
-        public static readonly DependencyProperty PositionProperty = DependencyProperty.Register("Position", typeof(Vector3), typeof(Element));
-        public static readonly DependencyProperty ScaleProperty = DependencyProperty.Register("Scale", typeof(Vector3), typeof(Element));
+        #region Properties
+        public static readonly DependencyProperty WidthProperty = DependencyProperty.Register <Element, float>("Width",  e => ref e.size.x);
+        public static readonly DependencyProperty HeightProperty = DependencyProperty.Register<Element, float>("Height", e => ref e.size.y);
+        public static readonly DependencyProperty DepthProperty = DependencyProperty.Register <Element, float>("Depth",  e => ref e.size.z);
+        public static readonly DependencyProperty XProperty = DependencyProperty.Register     <Element, float>("X",      e => ref e.position.x);
+        public static readonly DependencyProperty YProperty = DependencyProperty.Register     <Element, float>("Y",      e => ref e.position.y);
+        public static readonly DependencyProperty ZProperty = DependencyProperty.Register     <Element, float>("Z",      e => ref e.position.z);
+
+        [SerializeField] private Vector3 size;
+        [SerializeField] private Vector3 position;
 
         public float Width
         {
-            get => RectTransform.sizeDelta.x;
-            set => RectTransform.sizeDelta = new Vector2(value, RectTransform.sizeDelta.y);
+            get => (float)GetValue(WidthProperty);
+            set => SetValue(WidthProperty, value);
         }
 
         public float Height
         {
-            get => RectTransform.sizeDelta.y;
-            set => RectTransform.sizeDelta = new Vector2(RectTransform.sizeDelta.x, value);
+            get => (float)GetValue(HeightProperty);
+            set => SetValue(HeightProperty, value);
         }
 
         public float Depth
         {
-            get => Scale[2];
-            set => SetScale(2, value);
+            get => (float)GetValue(DepthProperty);
+            set => SetValue(DepthProperty, value);
         }
 
         public float X
         {
-            get => Position[0];
-            set => SetPosition(0, value);
+            get => (float)GetValue(XProperty);
+            set => SetValue(XProperty, value);
         }
 
         public float Y
         {
-            get => Position[1];
-            set => SetPosition(1, value);
+            get => (float)GetValue(YProperty);
+            set => SetValue(YProperty, value);
         }
 
         public float Z
         {
-            get => Position[2];
-            set => SetPosition(2, value);
+            get => (float)GetValue(ZProperty);
+            set => SetValue(ZProperty, value);
         }
+        #endregion Properties
 
-        public Vector3 Position
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            get => RectTransform.localPosition;
-            set => RectTransform.localPosition = value;
-        }
+            base.OnPropertyChanged(e);
 
-        public Vector3 Scale
-        {
-            get => RectTransform.localScale;
-            set => RectTransform.localScale = value;
+            var value = e.NewValue;
+            switch (e.Property.Name)
+            {
+                case "Width": RectTransform.sizeDelta = new Vector2((float)value, RectTransform.sizeDelta.y); break;
+                case "Height": RectTransform.sizeDelta = new Vector2(RectTransform.sizeDelta.x, (float)value); break;
+                case "Depth": SetScale(2, (float)value); break;
+                case "X": SetPosition(0, (float)value); break;
+                case "Y": SetPosition(1, (float)value); break;
+                case "Z": SetPosition(2, (float)value); break;
+            }
         }
 
         private RectTransform RectTransform
@@ -68,16 +75,16 @@ namespace Uaml.UX
 
         private void SetPosition(int index, float value)
         {
-            var p = Position;
+            var p = RectTransform.localPosition;
             p[index] = value;
-            Position = p;
+            RectTransform.localPosition = p;
         }
 
         private void SetScale(int index, float value)
         {
-            var s = Scale;
+            var s = RectTransform.localScale;
             s[index] = value;
-            Scale = s;
+            RectTransform.localScale = s;
         }
     }
 }

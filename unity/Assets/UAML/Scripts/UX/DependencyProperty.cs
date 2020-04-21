@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Uaml.Internal;
 
 namespace Uaml.UX
 {
     public class DependencyProperty
     {
-        public string Name { get; private set; }
-        public Type PropertyType { get; private set; }
-        public Type OwnerType { get; private set; }
+        public delegate ref PropType Access<Owner, PropType>(Owner owner);
 
-        private bool initialized;
+        public readonly string Name;
+        public readonly Type PropertyType;
+        public readonly Type OwnerType;
+        public readonly PropertyMetadata PropertyMetadata;
+
         private GetDelegate getter;
         private SetDelegate setter;
+        private bool initialized;
 
         private delegate void SetDelegate(object instance, object value);
         private delegate object GetDelegate(object instance);
@@ -23,62 +25,24 @@ namespace Uaml.UX
 
         internal static DependencyPropertySet GetDeclaredProperties(Type type) => typeProperties.TryGetValue(type, out var props) ? props : null;
 
-        internal PropertyInfo Property { get; private set; }
-
-        internal void SetValue(object instance, object value)
+        private DependencyProperty(string name, Type propertyType, Type ownerType, GetDelegate getter, SetDelegate setter, PropertyMetadata propertyMetadata)
         {
-            InitAccessors();
-            setter?.Invoke(instance, value);
+            Name = name;
+            PropertyType = propertyType;
+            OwnerType = ownerType;
+            PropertyMetadata = propertyMetadata;
+            this.getter = getter;
+            this.setter = setter;
         }
 
-        internal object GetValue(object instance)
+        public static DependencyProperty Register<Owner, PropType>(string name, Access<Owner, PropType> accessor, PropertyMetadata propertyMetadata = null)
         {
-            InitAccessors();
-            return getter?.Invoke(instance);
-        }
+            var ownerType = typeof(Owner);
+            var propertyType = typeof(PropType);
+            var getter = new GetDelegate((object obj) => accessor((Owner)obj));
+            var setter = new SetDelegate((object obj, object value) => accessor((Owner)obj) = (PropType)value);
 
-        private void InitAccessors()
-        {
-            if (!initialized)
-            {
-                initialized = true;
-
-                Property = OwnerType.GetProperty(Name);
-                if (Property != null)
-                {
-                    if (Property.CanWrite)
-                    {
-                        setter = Property.SetValue;
-                    }
-
-                    if (Property.CanRead)
-                    {
-                        getter = Property.GetValue;
-                    }
-                }
-            }
-        }
-
-        internal static bool HasProperty(string name, Type ownerType, bool declaredOnly = false)
-        {
-            if (declaredOnly)
-            {
-                return allProperties.ContainsKey((name, ownerType));
-            }
-            else
-            {
-                return Util.WalkTypeChain(ownerType, type => allProperties.ContainsKey((name, type)));
-            }
-        }
-
-        public static DependencyProperty Register(string name, Type propertyType, Type ownerType)
-        {
-            var dp = new DependencyProperty
-            {
-                Name = name,
-                PropertyType = propertyType,
-                OwnerType = ownerType
-            };
+            var dp = new DependencyProperty(name, propertyType, ownerType, getter, setter, propertyMetadata);
 
             if (!allProperties.ContainsKey((name, ownerType)))
             {
@@ -97,6 +61,33 @@ namespace Uaml.UX
             typeProperty[name] = dp;
 
             return dp;
+        }
+
+        internal void SetValue(DependencyObject instance, object value)
+        {
+            var oldValue = getter(instance);
+            if (oldValue != value)
+            {
+                instance?.NotifyPropertyChanged(this, oldValue, value);
+                setter(instance, value);
+            }
+        }
+
+        internal object GetValue(object instance) => getter?.Invoke(instance);
+
+        internal static bool TryGetProperty(string name, Type ownerType, IEnumerable<string> namespaces, out DependencyProperty dp)
+        {
+            return Util.TryGetInTypeChain(ownerType, (name, ownerType), namespaces, allProperties.TryGetValue, out dp);
+        }
+
+        internal static bool HasProperty(string name, Type elementType, IEnumerable<string> namespaces)
+        {
+            return TryGetProperty(name, elementType, namespaces, out var _);
+        }
+
+        public override string ToString()
+        {
+            return $"DependencyProperty {OwnerType}.{Name} : {PropertyType}";
         }
     }
 }

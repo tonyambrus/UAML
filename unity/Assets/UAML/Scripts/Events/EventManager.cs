@@ -72,23 +72,14 @@ namespace Uaml.Events
 
         internal static RoutedEventSet GetDeclaredEvents(Type type) => typeEvents.TryGetValue(type, out var events) ? events : null;
 
-        internal static bool HasRoutedEvent(string name, Type elementType, IEnumerable<string> namespaces)
+        internal static bool TryGetEvent(string name, Type ownerType, IEnumerable<string> namespaces, out RoutedEvent re)
         {
-            return TryGetRoutedEvent(name, elementType, namespaces, out var _);
+            return Util.TryGetInTypeChain(ownerType, (name, ownerType), namespaces, allEvents.TryGetValue, out re);
         }
 
-        internal static bool TryGetRoutedEvent(string name, Type elementType, IEnumerable<string> namespaces, out RoutedEvent routedEvent)
+        internal static bool HasEvent(string name, Type elementType, IEnumerable<string> namespaces)
         {
-            if (Util.TryParseQualifiedName(name, elementType, namespaces, out var propertyName, out var ownerType))
-            {
-                if (allEvents.TryGetValue((propertyName, ownerType), out routedEvent))
-                {
-                    return true;
-                }
-            }
-
-            routedEvent = default;
-            return false;
+            return TryGetEvent(name, elementType, namespaces, out var _);
         }
     }
 }

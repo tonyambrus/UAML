@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         Button.Click="Button_Click_Routed">
-  <Panel X="10" Y="10" Width="200" Height="200">
+  <!--Panel X="10" Y="10" Width="200" Height="200">
     <Text Value="Text goes here:" Y="10"/>
     <Button Text="Hello" X="100" Y="0" />
     <Button Text="Click me!" Click="Button_Click" X="100" Y="30" />
@@ -14,5 +14,6 @@
       <Button Text="Item 2" Y="-40" Width="180"/>
       <Button Text="Item 3" Y="-60" Width="180"/>
     </ScrollView>
-  </Panel>
+  </Panel-->
+  <Button Text="Item 3" X="20" Y="60" Width="180"/>
 </Window>

@@ -24,7 +24,7 @@ namespace Uaml.Internal
         {
             var element = (FrameworkElement)go.AddComponent(template.type);
             element.gameObject.name = template.name;
-            element.name = template.name;
+            element.elementName = template.name;
             element.schema = schema;
             element.SetNamespaces(template.namespaces);
             element.SetProperties(template.properties.Values);

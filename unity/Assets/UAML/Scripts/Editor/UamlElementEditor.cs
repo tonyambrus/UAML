@@ -47,9 +47,30 @@ namespace Uaml.Editor
                 DrawProperties();
 
                 var element = (FrameworkElement)target;
-                element.transform.position = element.instance.transform.position;
-                element.transform.rotation = element.instance.transform.rotation;
-                element.transform.localScale = element.instance.transform.localScale;
+                var instance = element.EditorInstance;
+
+                element.ShowSelf = EditorGUILayout.Toggle("Show Debug", element.ShowSelf);
+                if (element.ShowSelf)
+                {
+                    if (GUILayout.Button("Select Shadow Element"))
+                    {
+                        element.ForceShow();
+                        EditorGUIUtility.PingObject(instance);
+                    }
+                }
+
+                if (instance)
+                {
+                    var e = element.transform;
+                    var i = instance.transform;
+
+                    var from = element.IsRoot ? e : i;
+                    var to = element.IsRoot ? i : e;
+
+                    to.position   = from.position;
+                    to.rotation   = from.rotation;
+                    to.localScale = from.localScale;
+                }
 
                 if (check.changed)
                 {
@@ -78,6 +99,8 @@ namespace Uaml.Editor
                 var newShow = EditorGUILayout.Foldout(show, groupName);
                 if (newShow)
                 {
+                    var element = (FrameworkElement)target;
+
                     foreach (var pair in e.selfProps)
                     {
                         var name = pair.Key;
@@ -85,7 +108,7 @@ namespace Uaml.Editor
 
                         if (TryDrawField(name, property.PropertyType, property.GetValue(target), out var result))
                         {
-                            property.SetValue(target, result);
+                            property.SetValue(element, result);
                         }
                     }
                 }

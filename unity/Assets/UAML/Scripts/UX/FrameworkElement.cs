@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Uaml.Core;
 using Uaml.Events;
-using Uaml.Internal;
 using Uaml.Internal.Events;
 using Uaml.Internal.Reflection;
 using UnityEngine;
@@ -12,11 +11,8 @@ using UnityEngine.Events;
 
 namespace Uaml.UX
 {
-
-    public class FrameworkElement : MonoBehaviour
+    public class FrameworkElement : DependencyObject //, ISerializationCallbackReceiver
     {
-        public static readonly DependencyProperty DataContextProperty = DependencyProperty.Register("DataContext", typeof(object), typeof(FrameworkElement));
-
         [SerializeField] private StringSerializableDictionary properties = new StringSerializableDictionary();
         [SerializeField] private StringSerializableDictionary events = new StringSerializableDictionary();
         [SerializeField] private List<string> namespaces = new List<string>();
@@ -41,6 +37,10 @@ namespace Uaml.UX
             }
         }
 
+        protected virtual void OnParentChanged(FrameworkElement oldParent, FrameworkElement newParent) { }
+        protected virtual void OnChildAdded(FrameworkElement child) { }
+        protected virtual void OnChildRemoved(FrameworkElement child) { }
+
         #region Events
         internal EventHandlers eventHandlers = new EventHandlers();
 
@@ -54,10 +54,10 @@ namespace Uaml.UX
         #endregion Events
 
         #region Visibility
-        protected bool showSelf = true;
-        protected bool showInHierarchy = true;
+        private bool showSelf = true;
+        private bool showInHierarchy = true;
 
-        public bool ShowSelf
+        internal bool ShowSelf
         {
             get => showSelf;
             set
@@ -70,7 +70,7 @@ namespace Uaml.UX
             }
         }
 
-        private bool ShowInHierarchy
+        internal bool ShowInHierarchy
         {
             get => (showInHierarchy || IsRoot) && showSelf;
             set
@@ -79,6 +79,62 @@ namespace Uaml.UX
                 {
                     showInHierarchy = value;
                     UpdateShow();
+                }
+            }
+        }
+
+        internal void ForceShow()
+        {
+            // TODO: fix me
+            var p = this;
+            while (p)
+            {
+                p.ShowInHierarchy = true;
+                p.ShowSelf = true;
+                p = p.Parent;
+            }
+        }
+
+        private void OnTransformParentChanged() => UpdateParent();
+
+        private void UpdateParent()
+        {
+            var parentT = transform.parent;
+            while (parentT != null)
+            {
+                var fe = parentT.GetComponent<FrameworkElement>();
+                if (fe && fe.Container)
+                {
+                    SetParent(fe);
+                    return;
+                }
+
+                parentT = parentT.parent;
+            }
+
+            SetParent(null);
+        }
+
+        private void SetParent(FrameworkElement newParent, bool suppressNotification = false)
+        {
+            if (parent != newParent)
+            {
+                if (parent)
+                {
+                    parent.RemoveChild(this, suppressNotification: true);
+                }
+
+                var oldParent = parent;
+                parent = newParent;
+
+                if (parent)
+                {
+                    parent.AddChild(this, suppressNotification: true);
+                }
+
+                if (!suppressNotification)
+                {
+                    OnParentChanged(oldParent, parent);
                 }
             }
         }
@@ -95,35 +151,32 @@ namespace Uaml.UX
         #endregion Visibility
 
         #region Initialization
-        [SerializeField] internal Component instance;
-        [SerializeField] internal Transform container;
-        [SerializeField] internal new string name;
+        [SerializeField] private ShadowElement instance;
+        [SerializeField] private Transform container;
+        [SerializeField] internal string elementName;
         [SerializeField] internal Schema schema;
-
-        private bool instanceInitialized;
-        private bool containerInitialized;
 
         public string ElementName
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(name))
+                if (string.IsNullOrWhiteSpace(elementName))
                 {
                     foreach (var t in Util.GetTypeChain(GetType()))
                     {
                         if (Schema.TryGetElement(t.Name, out var _))
                         {
-                            name = t.Name;
+                            elementName = t.Name;
                         }
                     }
 
-                    if (string.IsNullOrWhiteSpace(name))
+                    if (string.IsNullOrWhiteSpace(elementName))
                     {
                         throw new Exception($"Type {GetType()} not contained in schema");
                     }
                 }
 
-                return name;
+                return elementName;
             }
         }
 
@@ -141,22 +194,31 @@ namespace Uaml.UX
             }
         }
 
+        internal Component EditorInstance => Instance;
+
         protected Component Instance
         {
             get
             {
-                if (!instanceInitialized && (!instance && Schema))
+                if (instance && instance.element != this)
+                {
+                    instance = null;
+                }
+
+                if (!instance && Schema)
                 {
                     var prefab = Schema.GetElementPrefab(ElementName);
-                    instance = Spawn.Instantiate(prefab, gameObject.scene);
+                    var component = Spawn.Instantiate(prefab, gameObject.scene);
 
-                    if (IsRoot)
+                    instance = component.GetComponent<ShadowElement>();
+                    if (!instance)
                     {
-                        instance.transform.SetParent(transform, false);
-                        instance.name = "_" + ElementName;
+                        instance = component.gameObject.AddComponent<ShadowElement>();
                     }
+                    instance.element = this;
 
-                    instanceInitialized = true;
+                    UpdateParent();
+                    OnInstanceReparented();
                 }
 
                 return instance;
@@ -167,40 +229,67 @@ namespace Uaml.UX
         {
             get
             {
-                if (!containerInitialized && (!container && Schema))
+                if (!container && Schema)
                 {
                     container = Schema.GetContainerForInstance(ElementName, Instance);
-                    containerInitialized = true;
                 }
 
                 return container;
             }
         }
 
-        public void AddChild(FrameworkElement element)
+        internal void OnInstanceReparented()
+        {
+            var parentContainer = (IsRoot || !Parent?.Container) ? transform : Parent.Container;
+            instance.transform.SetParent(parentContainer, false);
+            instance.name = "_" + ElementName;
+        }
+
+        public void AddChild(FrameworkElement element, bool suppressNotification = false)
         {
             if (!container)
             {
                 throw new Exception($"Element {ElementName} can't have children");
             }
 
+            var oldParent = element.parent;
+
             children.Add(element);
-            element.parent = this;
+            element.SetParent(this);
             element.transform.SetParent(transform, false);
             element.instance.transform.SetParent(container, false);
             element.ShowInHierarchy = ShowInHierarchy;
             element.ShowSelf = false;
 
             const int elementPrefix = 0xF000;
-            if (element.name.Length == 0 || element.name[0] < elementPrefix)
+
+            // We must have a unique identifer for path for Unity AssetImportContext to use
+            // so just prepend a unique non-printable unicode character.
+            var id = elementPrefix + (children.Count - 1);
+            element.name = $"{char.ConvertFromUtf32(id)}{element.ElementName}";
+            element.instance.name = $"_{element.elementName}";
+
+            OnChildAdded(element);
+        }
+
+        public void RemoveChild(FrameworkElement element, bool suppressNotification = false)
+        {
+            if (!container)
             {
-                // We must have a unique identifer for path for Unity AssetImportContext to use
-                // so just prepend a unique non-printable unicode character.
-                var id = elementPrefix + (children.Count - 1);
-                element.name = $"{char.ConvertFromUtf32(id)}{element.ElementName}";
+                throw new Exception($"Element {ElementName} can't have children");
             }
 
-            element.instance.name = $"_{element.name}";
+            if (!element)
+            {
+                throw new NullReferenceException(nameof(element));
+            }
+
+            children.Remove(element);
+            element.ShowInHierarchy = true;
+            element.ShowSelf = false;
+            element.SetParent(null, suppressNotification);
+
+            OnChildRemoved(element);
         }
 
         internal void BindProperties(bool includeChildren = true, bool onlyLiterals = false)
@@ -242,7 +331,7 @@ namespace Uaml.UX
                 var eventName = pair.Key;
                 var bindingName = pair.Value;
 
-                if (!EventManager.TryGetRoutedEvent(eventName, elementType, Namespaces, out var routedEvent))
+                if (!EventManager.TryGetEvent(eventName, elementType, Namespaces, out var routedEvent))
                 {
                     throw new Exception($"Failed to find event {eventName} on {elementType.Name}");
                 }
@@ -287,6 +376,7 @@ namespace Uaml.UX
             }
 
             BindProperties(includeChildren: false, onlyLiterals: true);
+            //ApplyPropertiesToDependencyObject();
         }
 
         internal void SetEvents(IEnumerable<Internal.Attribute> attribs)
@@ -323,9 +413,9 @@ namespace Uaml.UX
         // TODO have way to specify per element field what default values are (e.g. scale has a default of (1,1,1) not (0,0,0))
         private bool IsDefaultValue(object v, Type type)
         {
-            return v == (type.IsValueType ? Activator.CreateInstance(type) : null);
+            return v == Util.GetDefaultValue(type);
         }
-
+        
         internal IEnumerable<FrameworkElement> ElementChain
         {
             get
@@ -343,5 +433,63 @@ namespace Uaml.UX
 
         internal IEnumerable<string> Namespaces => ElementChain.SelectMany(e => e.namespaces);
         #endregion Initialization
+
+        //#region Serialization
+        //[Serializable]
+        //private struct TypedProperty
+        //{
+        //    public string ownerType;
+        //    public string propertyName;
+        //    public string value;
+        //}
+
+        //void ISerializationCallbackReceiver.OnAfterDeserialize() => ApplyPropertiesToDependencyObject();
+        //void ISerializationCallbackReceiver.OnBeforeSerialize() => GetPropertiesFromDependencyObject();
+
+        //internal void ApplyPropertiesToDependencyObject()
+        //{
+        //    SignalPropertyChanges = false;
+
+        //    var propSet = ElementRegistry.GetProperties(GetType());
+        //    foreach (var pair in properties)
+        //    {
+        //        if (!propSet.TryGetValue(pair.Key, Namespaces, out var prop))
+        //        {
+        //            continue;
+        //        }
+
+        //        var result = ValueConverter.Convert(pair.Value, prop.PropertyType);
+        //        SetValue(prop, result);
+        //    }
+
+        //    SignalPropertyChanges = true;
+        //}
+
+        //internal void GetPropertiesFromDependencyObject()
+        //{
+        //    SignalPropertyChanges = false;
+
+        //    var elementInfo = ElementRegistry.GetProperties(GetType());
+
+        //    properties.Clear();
+        //    foreach (var p in elementInfo)
+        //    {
+        //        try
+        //        {
+        //            var value = GetValue(p.Value);
+        //            var strValue = (string)ValueConverter.Convert(value, typeof(string));
+
+        //            //Debug.Log($"serialize: ({p.Value.OwnerType.Name}, {p.Value.Name})='{strValue}'");
+        //            properties.Add(p.Value.Name, strValue);
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            Debug.LogException(e);
+        //        }
+        //    }
+
+        //    SignalPropertyChanges = true;
+        //}
+        //#endregion Serialization
     }
 }

@@ -9,8 +9,9 @@ namespace Uaml.Core
             bool isLiteral = true; // TODO: binding
             bool isBinding = false; // TODO: binding
 
-            if (isLiteral && ValueConverter.TryConvert(value, property.PropertyType, out var result))
+            if (isLiteral)
             {
+                var result = ValueConverter.Convert(value, property.PropertyType);
                 setter = new LiteralSetter(property, result);
                 return true;
             }

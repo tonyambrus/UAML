@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3fd901b3028a2842865efd3b8573e4f, type: 3}
+  m_Name: MRTKSchema
+  m_EditorClassIdentifier: 
+  namespaces: Uaml.MRTK
+  elementClass: Uaml.MRTK.Element
+  schema:
+  - {fileID: 11400000, guid: 0d863c9d075b5a146a57e7c21b2e644a, type: 2}
+  - {fileID: 11400000, guid: fb5f5e9929422a546a14325823669da7, type: 2}
+  - {fileID: 11400000, guid: 264a0b3a63a4d3d4e8f5333c7556e36c, type: 2}
+  - {fileID: 11400000, guid: 4e8162b134708ea43b45ba5633238249, type: 2}
+  - {fileID: 11400000, guid: 197af57db09fa8248a5a020fc39c793f, type: 2}
+  - {fileID: 11400000, guid: b873d429bfc8f044b8ff6c12d588c5c5, type: 2}
+  - {fileID: 11400000, guid: 8a0ddfe9afd99494faef1fef9a9f736d, type: 2}
+  - {fileID: 11400000, guid: d41248e5ba3ee234280d0631a985af71, type: 2}
+  - {fileID: 11400000, guid: 9cb4c63fb23578249a5c1a6405958748, type: 2}

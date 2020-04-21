@@ -12,7 +12,7 @@ namespace Uaml.Core
 
         private static void LoadComponent(FrameworkElement element, FrameworkElement root)
         {
-            element.BindProperties();
+            //element.BindProperties();
             element.BindEvents(root);
         }
     }

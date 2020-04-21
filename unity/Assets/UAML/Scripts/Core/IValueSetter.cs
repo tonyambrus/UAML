@@ -1,7 +1,9 @@
-﻿namespace Uaml.Core
+﻿using Uaml.UX;
+
+namespace Uaml.Core
 {
     public interface IValueSetter
     {
-        void Set(object instance);
+        void Set(DependencyObject instance);
     }
 }

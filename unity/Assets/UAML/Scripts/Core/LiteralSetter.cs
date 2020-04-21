@@ -13,7 +13,7 @@ namespace Uaml.Core
             this.value = value;
         }
 
-        public void Set(object instance)
+        public void Set(DependencyObject instance)
         {
             property.SetValue(instance, value);
         }

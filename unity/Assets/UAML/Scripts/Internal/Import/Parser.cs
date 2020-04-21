@@ -107,7 +107,7 @@ namespace Uaml.Internal
                 .ToDictionary(p => p.Key, p => p.Value);
 
             var events = attributes
-                .Where(p => EventManager.HasRoutedEvent(p.Key, ownerType, nsHierarchy))
+                .Where(p => EventManager.HasEvent(p.Key, ownerType, nsHierarchy))
                 .ToDictionary(p => p.Key, p => p.Value);
 
             return new Data.Element
