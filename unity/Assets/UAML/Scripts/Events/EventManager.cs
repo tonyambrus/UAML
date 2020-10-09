@@ -33,9 +33,9 @@ namespace Uaml.Events
 
             typeEvent[name] = routedEvent;
 
-            if (!typeOwners.TryGetValue(ownerType.Name, out var type))
+            if (!typeOwners.TryGetValue(ownerType.FullName, out var type))
             {
-                typeOwners[ownerType.Name] = ownerType;
+                typeOwners[ownerType.FullName] = ownerType;
             }
             else
             {

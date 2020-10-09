@@ -24,3 +24,58 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e68c292b79b846e48af62be98512f1a2, type: 2}
   - {fileID: 11400000, guid: ca60cf43dba24e14fa5b28d7b69895a8, type: 2}
   - {fileID: 11400000, guid: 525157b9cef62de45b169eb48a8b4770, type: 2}
+  elements:
+  - name: Button
+    prefab: {fileID: 5867838367540785355, guid: ccdfdac95dfb9ad428a7578f0490c02d,
+      type: 3}
+    className: Uaml.UX.Button
+    containerPath: 
+    isRoot: 0
+  - name: Checkbox
+    prefab: {fileID: 5935527437687883460, guid: 1b64490a6b7f1874d8e8c1cc8128ce96,
+      type: 3}
+    className: 
+    containerPath: 
+    isRoot: 0
+  - name: Image
+    prefab: {fileID: 2206185089237808494, guid: 00d0549bc60dc8d4cbe84edb06cccc4a,
+      type: 3}
+    className: 
+    containerPath: 
+    isRoot: 0
+  - name: Panel
+    prefab: {fileID: 5946838297589416890, guid: 596be2da5fca55948b6c3042e731fc47,
+      type: 3}
+    className: 
+    containerPath: Panel
+    isRoot: 0
+  - name: ScrollView
+    prefab: {fileID: 4446343780789471701, guid: ec5ba0b563e789746a44e15aaf6fea63,
+      type: 3}
+    className: 
+    containerPath: Scroll View/Viewport/Content
+    isRoot: 0
+  - name: Slider
+    prefab: {fileID: 5268604060277021557, guid: c80c4ae957c33a84b96911e5607e624b,
+      type: 3}
+    className: 
+    containerPath: 
+    isRoot: 0
+  - name: Text
+    prefab: {fileID: 6441812712862492076, guid: 7bf040b3aa2b53946a901786eaf62184,
+      type: 3}
+    className: Uaml.UX.Text
+    containerPath: 
+    isRoot: 0
+  - name: TextField
+    prefab: {fileID: 1009475757170027010, guid: 6934bf84745acec48b4940062b4f886b,
+      type: 3}
+    className: 
+    containerPath: 
+    isRoot: 0
+  - name: Window
+    prefab: {fileID: 1464438828871380802, guid: 7fea277987919284c859839bd1be105b,
+      type: 3}
+    className: Uaml.UX.Window
+    containerPath: Canvas/Container
+    isRoot: 1

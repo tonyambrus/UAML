@@ -3,7 +3,7 @@ using Uaml.MRTK;
 
 namespace Uaml.Examples.MRTK
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Uaml.MRTK.Window
     {
         private bool _contentLoaded;
         

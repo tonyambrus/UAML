@@ -3,12 +3,16 @@ using System.Collections.Generic;
 
 namespace Uaml.UX
 {
-
     internal static class Util
     {
         public static bool IsDefaultValue(object v, Type type)
         {
-            return v == GetDefaultValue(type);
+            if (type == typeof(string))
+            {
+                return string.IsNullOrEmpty((string)v);
+            }
+
+            return Equals(v, GetDefaultValue(type));
         }
 
         public static object GetDefaultValue(Type type)

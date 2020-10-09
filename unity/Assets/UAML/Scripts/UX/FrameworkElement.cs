@@ -115,7 +115,7 @@ namespace Uaml.UX
             SetParent(null);
         }
 
-        private void SetParent(FrameworkElement newParent, bool suppressNotification = false)
+        public void SetParent(FrameworkElement newParent, bool suppressNotification = false)
         {
             if (parent != newParent)
             {
@@ -132,7 +132,7 @@ namespace Uaml.UX
                     parent.AddChild(this, suppressNotification: true);
                 }
 
-                if (!suppressNotification)
+                if (!suppressNotification && instance)
                 {
                     OnParentChanged(oldParent, parent);
                 }
@@ -142,7 +142,10 @@ namespace Uaml.UX
         private void UpdateShow()
         {
             children.ForEach(c => { if (c) c.ShowInHierarchy = ShowInHierarchy; });
-            instance.gameObject.hideFlags = ShowInHierarchy ? HideFlags.None : HideFlags.HideInHierarchy;
+            if (instance) 
+            {
+                instance.gameObject.hideFlags = ShowInHierarchy ? HideFlags.None : HideFlags.HideInHierarchy;
+            }
 
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.DirtyHierarchyWindowSorting();
@@ -152,9 +155,12 @@ namespace Uaml.UX
 
         #region Initialization
         [SerializeField] private ShadowElement instance;
+        [SerializeField] private string instancePath;
         [SerializeField] private Transform container;
         [SerializeField] internal string elementName;
         [SerializeField] internal Schema schema;
+
+        public virtual string ContainerPath => null;
 
         public string ElementName
         {
@@ -194,7 +200,29 @@ namespace Uaml.UX
             }
         }
 
-        internal Component EditorInstance => Instance;
+#if UNITY_EDITOR
+        internal Component EditorInstance
+        {
+            get
+            {
+                if (UnityEditor.EditorUtility.IsPersistent(gameObject))
+                {
+                    return null; // original prefab, don't trigger instantiation
+                } 
+
+                if (!instance)
+                {
+                    // instantiate whole hierarchy
+                    foreach (var child in Children)
+                    {
+                        var _ = child.EditorInstance;
+                    }
+                }
+
+                return Instance;
+            }
+        }
+#endif
 
         protected Component Instance
         {
@@ -210,7 +238,13 @@ namespace Uaml.UX
                     var prefab = Schema.GetElementPrefab(ElementName);
                     var component = Spawn.Instantiate(prefab, gameObject.scene);
 
-                    instance = component.GetComponent<ShadowElement>();
+                    //instance = RootElement.transform.Find(InstancePath)?.GetComponent<ShadowElement>();
+
+                    if (!instance)
+                    {
+                        instance = component.GetComponent<ShadowElement>();
+                    }
+
                     if (!instance)
                     {
                         instance = component.gameObject.AddComponent<ShadowElement>();
@@ -243,11 +277,12 @@ namespace Uaml.UX
             var parentContainer = (IsRoot || !Parent?.Container) ? transform : Parent.Container;
             instance.transform.SetParent(parentContainer, false);
             instance.name = "_" + ElementName;
+            instancePath = null;
         }
 
-        public void AddChild(FrameworkElement element, bool suppressNotification = false)
+        private void AddChild(FrameworkElement element, bool suppressNotification = false)
         {
-            if (!container)
+            if (instance && !container)
             {
                 throw new Exception($"Element {ElementName} can't have children");
             }
@@ -255,9 +290,7 @@ namespace Uaml.UX
             var oldParent = element.parent;
 
             children.Add(element);
-            element.SetParent(this);
             element.transform.SetParent(transform, false);
-            element.instance.transform.SetParent(container, false);
             element.ShowInHierarchy = ShowInHierarchy;
             element.ShowSelf = false;
 
@@ -267,12 +300,14 @@ namespace Uaml.UX
             // so just prepend a unique non-printable unicode character.
             var id = elementPrefix + (children.Count - 1);
             element.name = $"{char.ConvertFromUtf32(id)}{element.ElementName}";
-            element.instance.name = $"_{element.elementName}";
-
-            OnChildAdded(element);
+            
+            if (instance)
+            {
+                OnChildAdded(element);
+            }
         }
 
-        public void RemoveChild(FrameworkElement element, bool suppressNotification = false)
+        private void RemoveChild(FrameworkElement element, bool suppressNotification = false)
         {
             if (!container)
             {
@@ -289,7 +324,10 @@ namespace Uaml.UX
             element.ShowSelf = false;
             element.SetParent(null, suppressNotification);
 
-            OnChildRemoved(element);
+            if (instance)
+            {
+                OnChildRemoved(element);
+            }
         }
 
         internal void BindProperties(bool includeChildren = true, bool onlyLiterals = false)
@@ -319,6 +357,21 @@ namespace Uaml.UX
             {
                 children.ForEach(c => c.BindProperties(includeChildren));
             }
+        }
+
+        internal void Init(FrameworkElement root)
+        {
+            // HACK: unity leaving null elements around, clear out here
+            for (var i = children.Count - 1; i >= 0; i--)
+            {
+                if (!children[i])
+                {
+                    children.RemoveAt(i);
+                }
+            }
+
+            BindProperties();
+            BindEvents(root);
         }
 
         internal void BindEvents(FrameworkElement root, bool includeChildren = true)
@@ -375,8 +428,7 @@ namespace Uaml.UX
                 properties[pair.Key] = pair.Value;
             }
 
-            BindProperties(includeChildren: false, onlyLiterals: true);
-            //ApplyPropertiesToDependencyObject();
+            ApplyPropertiesToDependencyObject();
         }
 
         internal void SetEvents(IEnumerable<Internal.Attribute> attribs)
@@ -396,10 +448,16 @@ namespace Uaml.UX
             {
                 var prop = pair.Value;
                 var value = prop.GetValue(this);
-                if (!onlyChanged || !IsDefaultValue(value, prop.PropertyType))
+
+                if (onlyChanged)
                 {
-                    properties[pair.Key] = value.ToString();
+                    if (Util.IsDefaultValue(value, prop.PropertyType))
+                    {
+                        continue;
+                    }
                 }
+
+                properties[pair.Key] = (string)ValueConverter.Convert(value, typeof(string));
             }
 
             return properties;
@@ -410,12 +468,6 @@ namespace Uaml.UX
             return events;
         }
 
-        // TODO have way to specify per element field what default values are (e.g. scale has a default of (1,1,1) not (0,0,0))
-        private bool IsDefaultValue(object v, Type type)
-        {
-            return v == Util.GetDefaultValue(type);
-        }
-        
         internal IEnumerable<FrameworkElement> ElementChain
         {
             get
@@ -446,24 +498,32 @@ namespace Uaml.UX
         //void ISerializationCallbackReceiver.OnAfterDeserialize() => ApplyPropertiesToDependencyObject();
         //void ISerializationCallbackReceiver.OnBeforeSerialize() => GetPropertiesFromDependencyObject();
 
-        //internal void ApplyPropertiesToDependencyObject()
-        //{
-        //    SignalPropertyChanges = false;
+        internal void ApplyPropertiesToDependencyObject(bool includeChildren = false)
+        {
+            SignalPropertyChanges = false;
 
-        //    var propSet = ElementRegistry.GetProperties(GetType());
-        //    foreach (var pair in properties)
-        //    {
-        //        if (!propSet.TryGetValue(pair.Key, Namespaces, out var prop))
-        //        {
-        //            continue;
-        //        }
+            var propSet = ElementRegistry.GetProperties(GetType());
+            foreach (var pair in properties)
+            {
+                if (!propSet.TryGetValue(pair.Key, Namespaces, out var prop))
+                {
+                    continue;
+                }
 
-        //        var result = ValueConverter.Convert(pair.Value, prop.PropertyType);
-        //        SetValue(prop, result);
-        //    }
+                var result = ValueConverter.Convert(pair.Value, prop.PropertyType);
+                SetValue(prop, result);
+            }
 
-        //    SignalPropertyChanges = true;
-        //}
+            SignalPropertyChanges = true;
+
+            if (includeChildren)
+            {
+                foreach (var child in Children)
+                {
+                    child.ApplyPropertiesToDependencyObject();
+                }
+            }
+        }
 
         //internal void GetPropertiesFromDependencyObject()
         //{

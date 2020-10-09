@@ -18,6 +18,7 @@ namespace Uaml.Internal
         private readonly Type elementBaseType;
         private readonly Data.Document document;
         private List<string> namespaces = new List<string>();
+        private Dictionary<string, Type> elementTypes = new Dictionary<string, Type>();
 
         public static Data.Document Parse(Schema schema, string text)
         {
@@ -81,13 +82,6 @@ namespace Uaml.Internal
         {
             var attributes = ReadAttributes(reader);
 
-            if (!TryGetElementType(template, attributes, elementBaseType, out var ownerType, out var className))
-            {
-                throw new Exception($"Failed to get type {className}");
-            }
-
-            var typeInfo = ElementRegistry.GetElementType(ownerType);
-
             var namespaces = attributes
                 .Where(p => NamespaceAttribute.IsNamespaceKey(p.Value) && NamespaceAttribute.IsCLRNamespace(p.Value))
                 .Select(p => NamespaceAttribute.Parse(p.Value).Value)
@@ -100,7 +94,15 @@ namespace Uaml.Internal
 
             var nsHierarchy = GetElementChain(parent)
                 .SelectMany(e => e.namespaces)
-                .Concat(namespaces);
+                .Concat(namespaces)
+                .ToList();
+
+            if (!TryGetElementType(template, attributes, elementBaseType, nsHierarchy, out var ownerType, out var className))
+            {
+                throw new Exception($"Failed to get type {className}");
+            }
+
+            var typeInfo = ElementRegistry.GetElementType(ownerType);
 
             var properties = attributes
                 .Where(p => typeInfo.hierarchyProps.ContainsKey(p.Key, nsHierarchy))
@@ -123,8 +125,32 @@ namespace Uaml.Internal
             };
         }
 
-        private static bool TryGetElementType(Core.Element template, Dictionary<string, Attribute> attributes, Type elementBaseType, out Type type, out string className)
+        private bool TryGetElementType(Core.Element template, Dictionary<string, Attribute> attributes, Type elementBaseType, List<string> namespaces, out Type type, out string className)
         {
+            //var xClassType = default(Type);
+            //
+            //if (elementTypes.TryGetValue(template.prefab.name, out xClassType))
+            //{
+            //    className = xClassType.FullName;
+            //    type = xClassType;
+            //    return true;
+            //}
+            //else
+            //{
+            //    foreach (var ns in namespaces)
+            //    {
+            //        if (TryGetType($"{ns}.{template.prefab.name}", out xClassType))
+            //        {
+            //            className = xClassType.FullName;
+            //            elementTypes[template.prefab.name] = xClassType;
+            //            type = xClassType;
+            //            return true;
+            //        }
+            //    }
+            //
+            //    throw new Exception("Expect script classes to be named the same as the prefabs, using the Schema namespace.");
+            //}
+
             if (attributes.TryGetValue("x:Class", out var xClass))
             {
                 className = xClass.Value;

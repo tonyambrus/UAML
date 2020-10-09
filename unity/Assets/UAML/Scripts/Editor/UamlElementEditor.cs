@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using Uaml.Internal;
 using Uaml.Internal.Reflection;
 using Uaml.UX;
 using UnityEditor;
@@ -10,6 +12,20 @@ namespace Uaml.Editor
     [CustomEditor(typeof(FrameworkElement), editorForChildClasses: true)]
     public class UamlElementEditor : UnityEditor.Editor
     {
+        private enum SaveFlag
+        {
+            Off,
+            Dirty,
+            Force
+        }
+
+        private const string prefKey = "Synchronize With File";
+        private bool Synchronize
+        {
+            get => EditorPrefs.GetBool(prefKey, false);
+            set => EditorPrefs.SetBool(prefKey, value);
+        }
+
         private ElementType elemInfo;
         private Dictionary<string, bool> showGroup = new Dictionary<string, bool>();
         private Dictionary<string, Func<string, object, object>> map = new Dictionary<string, Func<string, object, object>>()
@@ -29,7 +45,6 @@ namespace Uaml.Editor
             return drawer(name, (T)value);
         }
 
-
         public void OnEnable()
         {
             elemInfo = ElementRegistry.GetElementType(target.GetType());
@@ -39,15 +54,57 @@ namespace Uaml.Editor
         {
         }
 
+        private static void OpenFileInVisualStudioIDE(string path, int gotoLine)
+        {
+            System.Diagnostics.Process.Start("devenv", " /edit \"" + path + "\" /command \"edit.goto " + gotoLine.ToString() + " \" ");
+        }
+
         public override void OnInspectorGUI()
         {
             using (var check = new EditorGUI.ChangeCheckScope())
             {
-                DrawEvents();
-                DrawProperties();
+                var saveFlag = SaveFlag.Off;
 
                 var element = (FrameworkElement)target;
                 var instance = element.EditorInstance;
+
+                using (new EditorGUILayout.HorizontalScope("Box"))
+                {
+                    var oldSync = Synchronize;
+                    var newSync = GUILayout.Toggle(oldSync, "Synchronize", GUILayout.Width(90));
+                    if (oldSync != newSync)
+                    {
+                        Synchronize = newSync;
+                    }
+
+                    GUILayout.FlexibleSpace();
+
+                    if (newSync)
+                    {
+                        saveFlag = SaveFlag.Dirty;
+                    }
+                    else if (GUILayout.Button("Save", EditorStyles.miniButton))
+                    {
+                        saveFlag = SaveFlag.Force;
+                    }
+
+                    if (GUILayout.Button("Open", EditorStyles.miniButton))
+                    {
+                        var path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(element.RootElement);
+                        OpenFileInVisualStudioIDE(path, 1);
+                    }
+                }
+
+                // TODO: switch to serialized property system
+                Undo.RecordObject(element, "Modify property");
+
+                DrawEvents();
+                DrawProperties();
+
+                if (saveFlag != SaveFlag.Dirty)
+                {
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(element);
+                }
 
                 element.ShowSelf = EditorGUILayout.Toggle("Show Debug", element.ShowSelf);
                 if (element.ShowSelf)
@@ -75,6 +132,19 @@ namespace Uaml.Editor
                 if (check.changed)
                 {
                    serializedObject.Update();
+                }
+
+                if (saveFlag == SaveFlag.Force || (saveFlag == SaveFlag.Dirty && check.changed))
+                {
+                    var path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(element.RootElement);
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        var uaml = Exporter.Export(element.RootElement);
+                        File.WriteAllText(path, uaml);
+                        AssetDatabase.ImportAsset(path);
+
+                        element.RootElement.ApplyPropertiesToDependencyObject(true);
+                    }
                 }
             }
         }

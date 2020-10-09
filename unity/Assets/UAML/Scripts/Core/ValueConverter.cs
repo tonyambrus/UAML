@@ -42,6 +42,11 @@ namespace Uaml.Core
         {
             if (targetType == typeof(string))
             {
+                if (value is Color c)
+                {
+                    return ColorUtility.ToHtmlStringRGBA(c);
+                }
+
                 if (value is string)
                 {
                     return value;
@@ -51,6 +56,11 @@ namespace Uaml.Core
             }
             else if (value is string)
             {
+                if (targetType == typeof(Color))
+                {
+                    return ColorUtility.TryParseHtmlString((string)value, out var c) ? c : default;
+                }
+
                 return JsonConvert.DeserializeObject((string)value, targetType);
             }
             else

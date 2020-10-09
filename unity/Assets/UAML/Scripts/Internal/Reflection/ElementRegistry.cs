@@ -11,7 +11,6 @@ namespace Uaml.Internal.Reflection
     public static class ElementRegistry
     {
         private static Dictionary<Type, ElementType> registry = new Dictionary<Type, ElementType>();
-
        
         internal static ElementType GetElementType(Type type)
         {

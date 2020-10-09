@@ -21,10 +21,10 @@ public class UamlImporter : ScriptedImporter
         var text = File.ReadAllText(ctx.assetPath);
         var document = Parser.Parse(schema, text);
 
-        if (!Generator.Generate(document, ctx.assetPath))
-        {
-            // TODO: trigger reimport to load the generated class and add as component
-        }
+        //if (!Generator.Generate(document, ctx.assetPath))
+        //{
+        //    // TODO: trigger reimport to load the generated class and add as component
+        //}
 
         var root = Spawner.Spawn(document);
 

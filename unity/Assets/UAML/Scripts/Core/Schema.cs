@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Uaml.UX;
 using UnityEngine;
 
@@ -11,7 +10,7 @@ namespace Uaml.Core
     {
         public string namespaces;
         public string elementClass;
-        public List<Element> schema = new List<Element>();
+        public List<Element> elements = new List<Element>();
         private Dictionary<string, Element> dictionary = null;
 
         private void LoadSchema()
@@ -19,7 +18,7 @@ namespace Uaml.Core
             if (dictionary == null)
             {
                 dictionary = new Dictionary<string, Element>(StringComparer.OrdinalIgnoreCase);
-                foreach (var e in schema)
+                foreach (var e in elements)
                 {
                     dictionary[e.name] = e;
                 }
@@ -43,22 +42,34 @@ namespace Uaml.Core
 
         internal Transform GetContainerForInstance(string name, Component component)
         {
-            if ((component is FrameworkElement e) && e.IsRoot)
+            if (component is FrameworkElement e)
             {
-                return component.transform;
+                if (e.IsRoot)
+                {
+                    return e.transform;
+                }
+
+                if (string.IsNullOrEmpty(e.ContainerPath))
+                {
+                    return null;
+                }
+
+                return component.transform.Find(e.ContainerPath);
             }
 
-            if (!TryGetElement(name, out var element))
-            {
-                return null;
-            }
+            throw new NotImplementedException("Expect FrameworkElement");
 
-            if (!string.IsNullOrWhiteSpace(element.containerPath))
-            {
-                return component.transform.Find(element.containerPath);
-            }
-
-            return null;
+            //if (!TryGetElement(name, out var element))
+            //{
+            //    return null;
+            //}
+            //
+            //if (!string.IsNullOrWhiteSpace(element.containerPath))
+            //{
+            //    return component.transform.Find(element.containerPath);
+            //}
+            //
+            //return null;
         }
     }
 }

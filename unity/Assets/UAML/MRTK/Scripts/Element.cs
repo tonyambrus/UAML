@@ -6,6 +6,8 @@ namespace Uaml.MRTK
     public class Element : FrameworkElement
     {
         #region Properties
+        public static readonly DependencyProperty IdProperty = DependencyProperty.Register<Element, string>("Id", e => ref e.id);
+        public static readonly DependencyProperty ClassProperty = DependencyProperty.Register<Element, string>("Class", e => ref e.clazz);
         public static readonly DependencyProperty WidthProperty = DependencyProperty.Register<Element, float>("Width", e => ref e.size.x);
         public static readonly DependencyProperty HeightProperty = DependencyProperty.Register<Element, float>("Height", e => ref e.size.y);
         public static readonly DependencyProperty DepthProperty = DependencyProperty.Register<Element, float>("Depth", e => ref e.size.z);
@@ -13,8 +15,22 @@ namespace Uaml.MRTK
         public static readonly DependencyProperty YProperty = DependencyProperty.Register<Element, float>("Y", e => ref e.position.y);
         public static readonly DependencyProperty ZProperty = DependencyProperty.Register<Element, float>("Z", e => ref e.position.z);
 
+        [SerializeField] private string id;
+        [SerializeField] private string clazz;
         [SerializeField] private Vector3 size;
         [SerializeField] private Vector3 position;
+
+        public string Id
+        {
+            get => (string)GetValue(IdProperty);
+            set => SetValue(IdProperty, value);
+        }
+
+        public string Class
+        {
+            get => (string)GetValue(ClassProperty);
+            set => SetValue(ClassProperty, value);
+        }
 
         public float Width
         {

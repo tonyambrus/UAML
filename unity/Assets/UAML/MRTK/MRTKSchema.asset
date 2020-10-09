@@ -14,13 +14,58 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   namespaces: Uaml.MRTK
   elementClass: Uaml.MRTK.Element
-  schema:
-  - {fileID: 11400000, guid: 0d863c9d075b5a146a57e7c21b2e644a, type: 2}
-  - {fileID: 11400000, guid: fb5f5e9929422a546a14325823669da7, type: 2}
-  - {fileID: 11400000, guid: 264a0b3a63a4d3d4e8f5333c7556e36c, type: 2}
-  - {fileID: 11400000, guid: 4e8162b134708ea43b45ba5633238249, type: 2}
-  - {fileID: 11400000, guid: 197af57db09fa8248a5a020fc39c793f, type: 2}
-  - {fileID: 11400000, guid: b873d429bfc8f044b8ff6c12d588c5c5, type: 2}
-  - {fileID: 11400000, guid: 8a0ddfe9afd99494faef1fef9a9f736d, type: 2}
-  - {fileID: 11400000, guid: d41248e5ba3ee234280d0631a985af71, type: 2}
-  - {fileID: 11400000, guid: 9cb4c63fb23578249a5c1a6405958748, type: 2}
+  elements:
+  - name: Button
+    prefab: {fileID: 5867838367540785355, guid: 8f47149c19e62eb46bda48e2584d2b73,
+      type: 3}
+    className: Uaml.MRTK.Button
+    containerPath: Button/IconAndText/TextMeshPro
+    isRoot: 0
+  - name: CheckBox
+    prefab: {fileID: 5935527437687883460, guid: fe7be63888078b7408f56eb2852e51f4,
+      type: 3}
+    className: Uaml.MRTK.CheckBox
+    containerPath: 
+    isRoot: 0
+  - name: Image
+    prefab: {fileID: 2206185089237808494, guid: 49c23842926d6e2479bd8b4a5ff20e1b,
+      type: 3}
+    className: Uaml.MRTK.Image
+    containerPath: 
+    isRoot: 0
+  - name: Panel
+    prefab: {fileID: 5946838297589416890, guid: 54c45e02629aa264da67f0baa322cad4,
+      type: 3}
+    className: Uaml.MRTK.Panel
+    containerPath: Panel
+    isRoot: 0
+  - name: ScrollView
+    prefab: {fileID: 4446343780789471701, guid: 1c23876a1548f44499525f46c71e3560,
+      type: 3}
+    className: Uaml.MRTK.ScrollView
+    containerPath: ScrollView/ScrollingObjectCollection/Container
+    isRoot: 0
+  - name: Slider
+    prefab: {fileID: 5268604060277021557, guid: 658c8b49b5162e449a700736a199a596,
+      type: 3}
+    className: 
+    containerPath: 
+    isRoot: 0
+  - name: Text
+    prefab: {fileID: 6441812712862492076, guid: 0a5e1fb7a949d1f4a8ebd748a9b9fcb5,
+      type: 3}
+    className: Uaml.MRTK.Text
+    containerPath: 
+    isRoot: 0
+  - name: TextField
+    prefab: {fileID: 1009475757170027010, guid: bef0568426e91344e8fc003d55ecb045,
+      type: 3}
+    className: Uaml.MRTK.TextField
+    containerPath: 
+    isRoot: 0
+  - name: Window
+    prefab: {fileID: 1464438828871380802, guid: 2a54ed70dcbd0f843832b47b28320a65,
+      type: 3}
+    className: Uaml.MRTK.Window
+    containerPath: Slate/ContentQuad
+    isRoot: 1

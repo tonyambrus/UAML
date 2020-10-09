@@ -1,18 +1,14 @@
-<Window x:Class="Uaml.Examples.MRTK.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        Click="Button_Click_Routed">
-  <Panel X="10" Y="10" Width="200" Height="200">
+<?xml version="1.0" encoding="utf-8"?>
+<Window Class="said the bear" Width="1236.0" X="14.1">
+  <Text Value="Text goes here:" />
+  <Panel Width="200.0" Height="200.0" X="10.0" Y="10.0">
     <Text Value="Text goes here:" />
-    <Button Text="Hello" X="100" Y="0" />
-    <Button Text="Click me!" Click="Button_Click" X="100" Y="30" />
-    
-    <ScrollView X="0" Y="225" Width="200" Height="200">
-      <Button Text="Item 1" Y="280" Width="180"/>
-      <Button Text="Item 2" Y="260" Width="180"/>
-      <Button Text="Item 3" Y="240" Width="180"/>
+    <Button Text="Hello" X="100.0" />
+    <Button Text="Click me!" X="100.0" Y="30.0" />
+    <ScrollView Width="200.0" Height="200.0" Y="225.0">
+      <Button Text="Item 1" Width="180.0" Y="280.0" />
+      <Button Text="Item 2" Width="180.0" Y="260.0" />
+      <Button Text="Item 3" Width="180.0" Y="240.0" />
     </ScrollView>
   </Panel>
 </Window>
