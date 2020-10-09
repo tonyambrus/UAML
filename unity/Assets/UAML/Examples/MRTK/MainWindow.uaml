@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Window Class="said the bear" Width="1236.0" X="14.1">
+<Window Class="myWindow" Width="1236.0" X="14.1">
   <Text Value="Text goes here:" />
   <Panel Width="200.0" Height="200.0" X="10.0" Y="10.0">
     <Text Value="Text goes here:" />
-    <Button Text="Hello" X="100.0" />
+    <Button Color="FF0000FF" Text="Hello" X="100.0" />
     <Button Text="Click me!" X="100.0" Y="30.0" />
     <ScrollView Width="200.0" Height="200.0" Y="225.0">
       <Button Text="Item 1" Width="180.0" Y="280.0" />

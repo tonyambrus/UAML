@@ -10,66 +10,48 @@ namespace Uaml.Core
     {
         public string namespaces;
         public string elementClass;
-        public List<Element> elements = new List<Element>();
-        private Dictionary<string, Element> dictionary = null;
+        public List<GameObject> schema = new List<GameObject>();
+        private Dictionary<string, GameObject> dictionary = null;
 
         private void LoadSchema()
         {
             if (dictionary == null)
             {
-                dictionary = new Dictionary<string, Element>(StringComparer.OrdinalIgnoreCase);
-                foreach (var e in elements)
+                dictionary = new Dictionary<string, GameObject>(StringComparer.OrdinalIgnoreCase);
+                foreach (var e in schema)
                 {
                     dictionary[e.name] = e;
                 }
             }
         }
 
-        public bool TryGetElement(string name, out Element element)
+        public bool TryGetElementPrefab(string name, out GameObject prefab)
         {
             LoadSchema();
 
-            return dictionary.TryGetValue(name, out element);
+            return dictionary.TryGetValue(name, out prefab);
         }
 
-        public Component GetElementPrefab(string name) => TryGetElementPrefab(name, out var component) ? component : null;
-
-        public bool TryGetElementPrefab(string name, out Component component)
-        {
-            component = null;
-            return TryGetElement(name, out var element) && (component = element.prefab) != null;
-        }
+        public GameObject GetElementPrefab(string name) => TryGetElementPrefab(name, out var component) ? component : null;
 
         internal Transform GetContainerForInstance(string name, Component component)
         {
-            if (component is FrameworkElement e)
+            var se = component.GetComponent<ShadowElement>();
+            var e = se.element;
+
+            if (e.IsRoot)
             {
-                if (e.IsRoot)
-                {
-                    return e.transform;
-                }
-
-                if (string.IsNullOrEmpty(e.ContainerPath))
-                {
-                    return null;
-                }
-
-                return component.transform.Find(e.ContainerPath);
+                return component.transform;
             }
 
-            throw new NotImplementedException("Expect FrameworkElement");
+            if (string.IsNullOrEmpty(e.ContainerPath))
+            {
+                return null;
+            }
 
-            //if (!TryGetElement(name, out var element))
-            //{
-            //    return null;
-            //}
-            //
-            //if (!string.IsNullOrWhiteSpace(element.containerPath))
-            //{
-            //    return component.transform.Find(element.containerPath);
-            //}
-            //
-            //return null;
+            return component.transform.Find(e.ContainerPath);
+
+            throw new NotImplementedException("Expect instance to have a ShadowElement with a valid FrameworkElement");
         }
     }
 }

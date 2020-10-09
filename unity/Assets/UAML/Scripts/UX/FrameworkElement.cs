@@ -170,7 +170,7 @@ namespace Uaml.UX
                 {
                     foreach (var t in Util.GetTypeChain(GetType()))
                     {
-                        if (Schema.TryGetElement(t.Name, out var _))
+                        if (Schema.TryGetElementPrefab(t.Name, out var _))
                         {
                             elementName = t.Name;
                         }
@@ -236,18 +236,18 @@ namespace Uaml.UX
                 if (!instance && Schema)
                 {
                     var prefab = Schema.GetElementPrefab(ElementName);
-                    var component = Spawn.Instantiate(prefab, gameObject.scene);
+                    var go = Spawn.Instantiate(prefab, gameObject.scene);
 
                     //instance = RootElement.transform.Find(InstancePath)?.GetComponent<ShadowElement>();
 
                     if (!instance)
                     {
-                        instance = component.GetComponent<ShadowElement>();
+                        instance = go.GetComponent<ShadowElement>();
                     }
 
                     if (!instance)
                     {
-                        instance = component.gameObject.AddComponent<ShadowElement>();
+                        instance = go.AddComponent<ShadowElement>();
                     }
                     instance.element = this;
 

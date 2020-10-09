@@ -14,68 +14,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   namespaces: Uaml.UX
   elementClass: Uaml.UX.Element
-  schema:
-  - {fileID: 11400000, guid: 708683581b9f027418564ca5017de81c, type: 2}
-  - {fileID: 11400000, guid: 68f642ee355870b4ea1666af38bd759b, type: 2}
-  - {fileID: 11400000, guid: 3478c0a7d1729b44dbfcd31d97c50652, type: 2}
-  - {fileID: 11400000, guid: 33a6b6850fb85064ca1652b293f7261f, type: 2}
-  - {fileID: 11400000, guid: 4a17b97d3a76a614bb4c95abd8545ab6, type: 2}
-  - {fileID: 11400000, guid: eee4c87b5ace1ac45925321e83d240c3, type: 2}
-  - {fileID: 11400000, guid: e68c292b79b846e48af62be98512f1a2, type: 2}
-  - {fileID: 11400000, guid: ca60cf43dba24e14fa5b28d7b69895a8, type: 2}
-  - {fileID: 11400000, guid: 525157b9cef62de45b169eb48a8b4770, type: 2}
   elements:
-  - name: Button
-    prefab: {fileID: 5867838367540785355, guid: ccdfdac95dfb9ad428a7578f0490c02d,
+  - prefab: {fileID: 5867838367540785355, guid: ccdfdac95dfb9ad428a7578f0490c02d,
       type: 3}
-    className: Uaml.UX.Button
-    containerPath: 
-    isRoot: 0
-  - name: Checkbox
-    prefab: {fileID: 5935527437687883460, guid: 1b64490a6b7f1874d8e8c1cc8128ce96,
+  - prefab: {fileID: 5935527437687883460, guid: 1b64490a6b7f1874d8e8c1cc8128ce96,
       type: 3}
-    className: 
-    containerPath: 
-    isRoot: 0
-  - name: Image
-    prefab: {fileID: 2206185089237808494, guid: 00d0549bc60dc8d4cbe84edb06cccc4a,
+  - prefab: {fileID: 2206185089237808494, guid: 00d0549bc60dc8d4cbe84edb06cccc4a,
       type: 3}
-    className: 
-    containerPath: 
-    isRoot: 0
-  - name: Panel
-    prefab: {fileID: 5946838297589416890, guid: 596be2da5fca55948b6c3042e731fc47,
+  - prefab: {fileID: 5946838297589416890, guid: 596be2da5fca55948b6c3042e731fc47,
       type: 3}
-    className: 
-    containerPath: Panel
-    isRoot: 0
-  - name: ScrollView
-    prefab: {fileID: 4446343780789471701, guid: ec5ba0b563e789746a44e15aaf6fea63,
+  - prefab: {fileID: 4446343780789471701, guid: ec5ba0b563e789746a44e15aaf6fea63,
       type: 3}
-    className: 
-    containerPath: Scroll View/Viewport/Content
-    isRoot: 0
-  - name: Slider
-    prefab: {fileID: 5268604060277021557, guid: c80c4ae957c33a84b96911e5607e624b,
+  - prefab: {fileID: 5268604060277021557, guid: c80c4ae957c33a84b96911e5607e624b,
       type: 3}
-    className: 
-    containerPath: 
-    isRoot: 0
-  - name: Text
-    prefab: {fileID: 6441812712862492076, guid: 7bf040b3aa2b53946a901786eaf62184,
+  - prefab: {fileID: 6441812712862492076, guid: 7bf040b3aa2b53946a901786eaf62184,
       type: 3}
-    className: Uaml.UX.Text
-    containerPath: 
-    isRoot: 0
-  - name: TextField
-    prefab: {fileID: 1009475757170027010, guid: 6934bf84745acec48b4940062b4f886b,
+  - prefab: {fileID: 1009475757170027010, guid: 6934bf84745acec48b4940062b4f886b,
       type: 3}
-    className: 
-    containerPath: 
-    isRoot: 0
-  - name: Window
-    prefab: {fileID: 1464438828871380802, guid: 7fea277987919284c859839bd1be105b,
+  - prefab: {fileID: 1464438828871380802, guid: 7fea277987919284c859839bd1be105b,
       type: 3}
-    className: Uaml.UX.Window
-    containerPath: Canvas/Container
-    isRoot: 1
+  schema:
+  - {fileID: 3144970419530611122, guid: ccdfdac95dfb9ad428a7578f0490c02d, type: 3}
+  - {fileID: 5178055886005521947, guid: 1b64490a6b7f1874d8e8c1cc8128ce96, type: 3}
+  - {fileID: 3666220132796443140, guid: 00d0549bc60dc8d4cbe84edb06cccc4a, type: 3}
+  - {fileID: 2419494030805623340, guid: 596be2da5fca55948b6c3042e731fc47, type: 3}
+  - {fileID: 5944074393372712912, guid: ec5ba0b563e789746a44e15aaf6fea63, type: 3}
+  - {fileID: 505807147265301542, guid: c80c4ae957c33a84b96911e5607e624b, type: 3}
+  - {fileID: 3566120555986381373, guid: 7bf040b3aa2b53946a901786eaf62184, type: 3}
+  - {fileID: 1768431816171647664, guid: 6934bf84745acec48b4940062b4f886b, type: 3}
+  - {fileID: 1324199985774804049, guid: 7fea277987919284c859839bd1be105b, type: 3}

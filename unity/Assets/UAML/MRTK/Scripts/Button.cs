@@ -48,6 +48,7 @@ namespace Uaml.MRTK
         }
 
         // TODO: automatically generate/reflect from schema to do this
+        public override string ContainerPath => "Button/IconAndText/TextMeshPro";
         private PressableButtonHoloLens2 _Button => Instance.GetPath<PressableButtonHoloLens2>("Button");
         private TextMeshPro _Text => Instance.GetPath<TextMeshPro>("Button/IconAndText/TextMeshPro");
         public void OnEnable() => BindEvent(_Button.ButtonPressed, ClickEvent);

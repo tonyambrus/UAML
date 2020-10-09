@@ -30,12 +30,12 @@ namespace Uaml.Internal
 
         private static bool Generate(Data.Document document, string assetPath, string classNs, string className)
         {
-            if (!document.schema.TryGetElement(document.root.name, out var rootElement) || string.IsNullOrEmpty(rootElement.className))
+            if (!document.schema.TryGetElementPrefab(document.root.name, out var rootElementPrefab))
             {
                 throw new Exception("Invalid root element");
             }
 
-            var rootElementClassName = rootElement.className;
+            var rootElementClassName = $"{classNs}.{rootElementPrefab.name}";
             var assetDir = Path.GetDirectoryName(assetPath);
             var assetFilename = Path.GetFileNameWithoutExtension(assetPath);
             var assetExt = Path.GetExtension(assetPath);

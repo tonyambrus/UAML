@@ -6,14 +6,14 @@ namespace Uaml.Core
 {
     public static class Spawn
     {
-        public static Component Instantiate(Component prefab, Scene scene = default)
+        public static GameObject Instantiate(GameObject prefab, Scene scene = default)
         {
             try
             {
                 var instance = UnityEngine.Object.Instantiate(prefab);
                 if (instance.gameObject.scene != scene && scene != default)
                 {
-                    SceneManager.MoveGameObjectToScene(instance.gameObject, scene);
+                    SceneManager.MoveGameObjectToScene(instance, scene);
 
                     // park under root
                     instance.transform.SetParent(scene.GetRootGameObjects()[0].transform, false);

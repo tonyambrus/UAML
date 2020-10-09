@@ -6,6 +6,7 @@ namespace Uaml.MRTK
 {
     public class ScrollView : Element
     {
+        public override string ContainerPath => "ScrollView/ScrollingObjectCollection/Container";
         private ScrollingObjectCollection _ScrollView => Instance.GetPath<ScrollingObjectCollection>("ScrollView/ScrollingObjectCollection");
 
         protected override void OnChildAdded(FrameworkElement child) => _ScrollView.UpdateCollection();

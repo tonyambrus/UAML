@@ -8,6 +8,7 @@ using Uaml.Core;
 using Uaml.Events;
 using Uaml.Internal.Reflection;
 using Uaml.UX;
+using UnityEngine;
 
 namespace Uaml.Internal
 {
@@ -54,14 +55,14 @@ namespace Uaml.Internal
                     continue;
                 }
 
-                if (!schema.TryGetElement(reader.Name, out var template) || !template.isRoot)
+                if (!schema.TryGetElementPrefab(reader.Name, out var prefab))
                 {
                     throw new Exception($"Unknown UAML root {reader.Name}");
                 }
 
                 return new Data.Document
                 {
-                    root = ParseElement(template, null),
+                    root = ParseElement(prefab, null),
                     schema = schema
                 };
             }
@@ -78,7 +79,7 @@ namespace Uaml.Internal
             }
         }
 
-        private Data.Element ParseElement(Core.Element template, Data.Element parent)
+        private Data.Element ParseElement(GameObject prefab, Data.Element parent)
         {
             var attributes = ReadAttributes(reader);
 
@@ -97,7 +98,7 @@ namespace Uaml.Internal
                 .Concat(namespaces)
                 .ToList();
 
-            if (!TryGetElementType(template, attributes, elementBaseType, nsHierarchy, out var ownerType, out var className))
+            if (!TryGetElementType(prefab, attributes, elementBaseType, nsHierarchy, out var ownerType, out var className))
             {
                 throw new Exception($"Failed to get type {className}");
             }
@@ -125,75 +126,75 @@ namespace Uaml.Internal
             };
         }
 
-        private bool TryGetElementType(Core.Element template, Dictionary<string, Attribute> attributes, Type elementBaseType, List<string> namespaces, out Type type, out string className)
+        private bool TryGetElementType(GameObject prefab, Dictionary<string, Attribute> attributes, Type elementBaseType, List<string> namespaces, out Type type, out string className)
         {
-            //var xClassType = default(Type);
-            //
-            //if (elementTypes.TryGetValue(template.prefab.name, out xClassType))
-            //{
-            //    className = xClassType.FullName;
-            //    type = xClassType;
-            //    return true;
-            //}
-            //else
-            //{
-            //    foreach (var ns in namespaces)
-            //    {
-            //        if (TryGetType($"{ns}.{template.prefab.name}", out xClassType))
-            //        {
-            //            className = xClassType.FullName;
-            //            elementTypes[template.prefab.name] = xClassType;
-            //            type = xClassType;
-            //            return true;
-            //        }
-            //    }
-            //
-            //    throw new Exception("Expect script classes to be named the same as the prefabs, using the Schema namespace.");
-            //}
+            var xClassType = default(Type);
 
-            if (attributes.TryGetValue("x:Class", out var xClass))
+            if (elementTypes.TryGetValue(prefab.name, out xClassType))
             {
-                className = xClass.Value;
-            }
-            else if (!string.IsNullOrWhiteSpace(template.className))
-            {
-                className = template.className;
+                className = xClassType.FullName;
+                type = xClassType;
+                return true;
             }
             else
             {
-                className = elementBaseType.FullName;
+                foreach (var ns in namespaces)
+                {
+                    if (TryGetType($"{ns}.{prefab.name}", out xClassType))
+                    {
+                        className = xClassType.FullName;
+                        elementTypes[prefab.name] = xClassType;
+                        type = xClassType;
+                        return true;
+                    }
+                }
+
+                throw new Exception("Expect script classes to be named the same as the prefabs, using the Schema namespace.");
             }
 
-            if (!string.IsNullOrWhiteSpace(xClass.Value))
-            {
-                if (TryGetType(xClass.Value, out var xClassType))
-                {
-                    type = xClassType;
-                    return true;
-                }
-                else
-                {
-                    // xClass hasn't been generated yet
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(template.className))
-            {
-                if (TryGetType(template.className, out var templateType))
-                {
-                    type = templateType;
-                    return true;
-                }
-                else
-                {
-                    // Type should exist if specified in schema
-                    type = null;
-                    return false;
-                }
-            }
-
-            type = elementBaseType;
-            return true;
+            //if (attributes.TryGetValue("x:Class", out var xClass))
+            //{
+            //    className = xClass.Value;
+            //}
+            //else if (!string.IsNullOrWhiteSpace(template.className))
+            //{
+            //    className = template.className;
+            //}
+            //else
+            //{
+            //    className = elementBaseType.FullName;
+            //}
+            //
+            //if (!string.IsNullOrWhiteSpace(xClass.Value))
+            //{
+            //    if (TryGetType(xClass.Value, out var xClassType))
+            //    {
+            //        type = xClassType;
+            //        return true;
+            //    }
+            //    else
+            //    {
+            //        // xClass hasn't been generated yet
+            //    }
+            //}
+            //
+            //if (!string.IsNullOrWhiteSpace(template.className))
+            //{
+            //    if (TryGetType(template.className, out var templateType))
+            //    {
+            //        type = templateType;
+            //        return true;
+            //    }
+            //    else
+            //    {
+            //        // Type should exist if specified in schema
+            //        type = null;
+            //        return false;
+            //    }
+            //}
+            //
+            //type = elementBaseType;
+            //return true;
         }
 
 
@@ -242,13 +243,13 @@ namespace Uaml.Internal
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if (!schema.TryGetElement(reader.Name, out var template))
+                    if (!schema.TryGetElementPrefab(reader.Name, out var prefab))
                     {
                         throw new Exception($"Unknown element '{reader.Name}'");
                     }
 
                     var parent = elementStack.Peek();
-                    var element = ParseElement(template, parent);
+                    var element = ParseElement(prefab, parent);
                     parent.children.Add(element);
 
                     if (!reader.IsEmptyElement)
